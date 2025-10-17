@@ -159,9 +159,11 @@ export default function Cart() {
                     </div>
                   </div>
 
-                  <Button className="w-full" size="lg">
-                    <Icon name="CreditCard" size={20} className="mr-2" />
-                    Оформить заказ
+                  <Button className="w-full" size="lg" asChild>
+                    <Link to="/checkout">
+                      <Icon name="CreditCard" size={20} className="mr-2" />
+                      Оформить заказ
+                    </Link>
                   </Button>
 
                   <div className="space-y-2 pt-4 border-t">
