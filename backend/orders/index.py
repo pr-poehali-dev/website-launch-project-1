@@ -107,6 +107,30 @@ def get_orders(limit: int = 50) -> List[Dict[str, Any]]:
     
     return orders
 
+def update_order_status(order_id: int, order_status: str, payment_status: str = None) -> bool:
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    if payment_status:
+        cur.execute('''
+            UPDATE orders 
+            SET order_status = %s, payment_status = %s, updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s
+        ''', (order_status, payment_status, order_id))
+    else:
+        cur.execute('''
+            UPDATE orders 
+            SET order_status = %s, updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s
+        ''', (order_status, order_id))
+    
+    conn.commit()
+    affected = cur.rowcount
+    cur.close()
+    conn.close()
+    
+    return affected > 0
+
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     method: str = event.get('httpMethod', 'GET')
     
@@ -115,7 +139,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 200,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
                 'Access-Control-Allow-Headers': 'Content-Type, X-User-Id, X-Auth-Token',
                 'Access-Control-Max-Age': '86400'
             },
@@ -134,6 +158,31 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             },
             'isBase64Encoded': False,
             'body': json.dumps(result)
+        }
+    
+    if method == 'PUT':
+        body_data = json.loads(event.get('body', '{}'))
+        order_id = body_data.get('orderId')
+        order_status = body_data.get('orderStatus')
+        payment_status = body_data.get('paymentStatus')
+        
+        if not order_id or not order_status:
+            return {
+                'statusCode': 400,
+                'headers': {'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'error': 'orderId and orderStatus are required'})
+            }
+        
+        success = update_order_status(order_id, order_status, payment_status)
+        
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'isBase64Encoded': False,
+            'body': json.dumps({'success': success})
         }
     
     if method == 'GET':

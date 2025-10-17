@@ -29,6 +29,17 @@
       "method": "GET",
       "path": "/",
       "expectedStatus": 200
+    },
+    {
+      "name": "Update order status",
+      "method": "PUT",
+      "path": "/",
+      "body": {
+        "orderId": 1,
+        "orderStatus": "processing",
+        "paymentStatus": "paid"
+      },
+      "expectedStatus": 200
     }
   ]
 }

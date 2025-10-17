@@ -5,6 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 
 interface OrderItem {
   id: number;
@@ -34,6 +42,7 @@ interface Order {
 export default function Admin() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchOrders();
@@ -48,6 +57,33 @@ export default function Admin() {
       console.error('Ошибка загрузки заказов:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const updateOrderStatus = async (orderId: number, orderStatus: string, paymentStatus?: string) => {
+    try {
+      const response = await fetch('https://functions.poehali.dev/d3d75687-e85e-4e1a-a5be-6133da9d382a', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, orderStatus, paymentStatus })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast({
+          title: "Статус обновлён",
+          description: "Статус заказа успешно изменён",
+        });
+        fetchOrders();
+      }
+    } catch (error) {
+      console.error('Ошибка обновления статуса:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось обновить статус заказа",
+        variant: "destructive"
+      });
     }
   };
 
@@ -244,6 +280,49 @@ export default function Admin() {
                         </p>
                       </div>
                     )}
+
+                    <div className="mt-4 pt-4 border-t">
+                      <div className="flex flex-wrap gap-4">
+                        <div className="flex-1 min-w-[200px]">
+                          <label className="text-sm font-medium mb-2 block">
+                            Статус заказа
+                          </label>
+                          <Select
+                            value={order.orderStatus}
+                            onValueChange={(value) => updateOrderStatus(order.id, value, order.paymentStatus)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="new">Новый</SelectItem>
+                              <SelectItem value="processing">В обработке</SelectItem>
+                              <SelectItem value="completed">Выполнен</SelectItem>
+                              <SelectItem value="cancelled">Отменён</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="flex-1 min-w-[200px]">
+                          <label className="text-sm font-medium mb-2 block">
+                            Статус оплаты
+                          </label>
+                          <Select
+                            value={order.paymentStatus}
+                            onValueChange={(value) => updateOrderStatus(order.id, order.orderStatus, value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">Ожидает оплаты</SelectItem>
+                              <SelectItem value="paid">Оплачен</SelectItem>
+                              <SelectItem value="failed">Ошибка оплаты</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
