@@ -1,0 +1,26 @@
+{
+  "tests": [
+    {
+      "name": "Send order notification",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "orderNumber": "TEST-123",
+        "name": "Test User",
+        "phone": "+7 999 123-45-67",
+        "email": "test@example.com",
+        "delivery": "courier",
+        "address": "Test Street, 1",
+        "totalAmount": 5000,
+        "items": [
+          {
+            "name": "Test Product",
+            "price": 2500,
+            "quantity": 2
+          }
+        ]
+      },
+      "expectedStatus": 200
+    }
+  ]
+}

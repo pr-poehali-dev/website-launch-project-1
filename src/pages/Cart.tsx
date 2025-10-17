@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -8,6 +8,7 @@ import Icon from '@/components/ui/icon';
 import { products } from '@/data/products';
 
 export default function Cart() {
+  const navigate = useNavigate();
   const [cartItems, setCartItems] = useState([
     { product: products[0], quantity: 1 },
     { product: products[1], quantity: 2 },
@@ -159,11 +160,20 @@ export default function Cart() {
                     </div>
                   </div>
 
-                  <Button className="w-full" size="lg" asChild>
-                    <Link to="/checkout">
-                      <Icon name="CreditCard" size={20} className="mr-2" />
-                      Оформить заказ
-                    </Link>
+                  <Button 
+                    className="w-full" 
+                    size="lg" 
+                    onClick={() => navigate('/checkout', { 
+                      state: { 
+                        cartData: { 
+                          items: cartItems, 
+                          totalAmount: totalPrice 
+                        } 
+                      } 
+                    })}
+                  >
+                    <Icon name="CreditCard" size={20} className="mr-2" />
+                    Оформить заказ
                   </Button>
 
                   <div className="space-y-2 pt-4 border-t">

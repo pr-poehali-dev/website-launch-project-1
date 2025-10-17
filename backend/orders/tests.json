@@ -1,0 +1,34 @@
+{
+  "tests": [
+    {
+      "name": "Create new order",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "name": "Test User",
+        "phone": "+7 999 123-45-67",
+        "email": "test@example.com",
+        "delivery": "courier",
+        "address": "Test Street, 1",
+        "payment": "card",
+        "totalAmount": 5000,
+        "comment": "Test order",
+        "items": [
+          {
+            "id": "1",
+            "name": "Test Product",
+            "price": 2500,
+            "quantity": 2
+          }
+        ]
+      },
+      "expectedStatus": 201
+    },
+    {
+      "name": "Get all orders",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200
+    }
+  ]
+}

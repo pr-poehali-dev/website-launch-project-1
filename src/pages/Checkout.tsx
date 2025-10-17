@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,12 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function Checkout() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  const [submitting, setSubmitting] = useState(false);
+  
+  const cartData = location.state?.cartData || { items: [], totalAmount: 0 };
+  
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -24,17 +29,82 @@ export default function Checkout() {
     payment: 'card'
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
     
-    toast({
-      title: "Заказ оформлен!",
-      description: "Мы свяжемся с вами в ближайшее время для подтверждения заказа.",
-    });
+    try {
+      const orderData = {
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        delivery: formData.delivery,
+        address: formData.address,
+        payment: formData.payment,
+        comment: formData.comment,
+        totalAmount: cartData.totalAmount,
+        items: cartData.items.map((item: any) => ({
+          id: item.product.id,
+          name: item.product.name,
+          price: item.product.price,
+          quantity: item.quantity
+        }))
+      };
 
-    setTimeout(() => {
-      navigate('/');
-    }, 2000);
+      const orderResponse = await fetch('https://functions.poehali.dev/d3d75687-e85e-4e1a-a5be-6133da9d382a', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+      });
+
+      const orderResult = await orderResponse.json();
+
+      await fetch('https://functions.poehali.dev/4ae0281f-43ab-4221-a5de-a8ad37489c97', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...orderData,
+          orderNumber: orderResult.orderNumber
+        })
+      });
+
+      if (formData.payment === 'card') {
+        const paymentResponse = await fetch('https://functions.poehali.dev/f714a1a1-83ec-4237-848f-e88477270d2f', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: cartData.totalAmount,
+            orderNumber: orderResult.orderNumber,
+            description: `Оплата заказа ${orderResult.orderNumber}`
+          })
+        });
+
+        const paymentResult = await paymentResponse.json();
+        
+        if (paymentResult.confirmationUrl) {
+          window.location.href = paymentResult.confirmationUrl;
+          return;
+        }
+      }
+
+      toast({
+        title: "Заказ оформлен!",
+        description: `Номер заказа: ${orderResult.orderNumber}. Мы свяжемся с вами в ближайшее время.`,
+      });
+
+      setTimeout(() => {
+        navigate('/');
+      }, 2000);
+    } catch (error) {
+      console.error('Ошибка оформления заказа:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось оформить заказ. Попробуйте снова.",
+        variant: "destructive"
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const updateField = (field: string, value: string) => {
@@ -200,9 +270,18 @@ export default function Checkout() {
                 <Icon name="ArrowLeft" size={16} className="mr-2" />
                 Назад в корзину
               </Button>
-              <Button type="submit" className="flex-1" size="lg">
-                <Icon name="Check" size={20} className="mr-2" />
-                Подтвердить заказ
+              <Button type="submit" className="flex-1" size="lg" disabled={submitting}>
+                {submitting ? (
+                  <>
+                    <Icon name="Loader2" size={20} className="mr-2 animate-spin" />
+                    Оформление...
+                  </>
+                ) : (
+                  <>
+                    <Icon name="Check" size={20} className="mr-2" />
+                    Подтвердить заказ
+                  </>
+                )}
               </Button>
             </div>
           </form>

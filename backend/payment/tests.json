@@ -1,0 +1,15 @@
+{
+  "tests": [
+    {
+      "name": "Create payment link",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "amount": 5000,
+        "orderNumber": "TEST-123",
+        "description": "Test payment"
+      },
+      "expectedStatus": 200
+    }
+  ]
+}
