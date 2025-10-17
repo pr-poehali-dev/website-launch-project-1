@@ -22,10 +22,8 @@ export default function Contacts() {
                     Телефоны
                   </h3>
                   <div className="space-y-2">
-                    <p className="text-2xl font-bold">+7 (800) 123-45-67</p>
-                    <p className="text-muted-foreground">Бесплатно по России</p>
-                    <p className="text-lg">+7 (495) 123-45-67</p>
-                    <p className="text-muted-foreground">Для звонков из Москвы</p>
+                    <p className="text-2xl font-bold">+7 (995) 503-28-39</p>
+                    <p className="text-muted-foreground">Основной номер</p>
                     <p className="text-sm text-muted-foreground mt-4">
                       Ежедневно с 9:00 до 21:00
                     </p>
