@@ -291,9 +291,11 @@ function generateProducts(): Product[] {
           ? images[Math.floor(Math.random() * images.length)]
           : `https://picsum.photos/seed/${productId}/400/400`;
         
+        const productName = `${brand} ${baseName} ${adj} ${variant}`;
+        
         products.push({
           id: String(productId++),
-          name: `${baseName} ${brand} ${adj} ${variant}`,
+          name: productName,
           price,
           oldPrice,
           image: imageUrl,
@@ -305,6 +307,7 @@ function generateProducts(): Product[] {
             'Бренд': brand,
             'Модель': `${adj} ${variant}`,
             'Категория': category,
+            'Тип товара': baseName,
             'Артикул': `${brand.toUpperCase()}-${variant}${productId}`,
             'Гарантия': '12 месяцев',
           },
