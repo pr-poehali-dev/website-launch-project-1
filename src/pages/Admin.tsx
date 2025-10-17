@@ -15,7 +15,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 
 interface OrderItem {
-  id: number;
+  productId: string;
   productName: string;
   productPrice: number;
   quantity: number;
@@ -37,6 +37,7 @@ interface Order {
   comment: string;
   createdAt: string;
   updatedAt: string;
+  items: OrderItem[];
 }
 
 export default function Admin() {
@@ -239,36 +240,71 @@ export default function Admin() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Icon name="User" size={16} className="text-muted-foreground" />
-                          <span className="font-medium">{order.customerName}</span>
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="font-semibold mb-3 flex items-center gap-2">
+                          <Icon name="Package" size={18} />
+                          Состав заказа
+                        </h3>
+                        <div className="border rounded-lg overflow-hidden">
+                          <table className="w-full">
+                            <thead className="bg-muted/50">
+                              <tr>
+                                <th className="text-left p-3 text-sm font-medium">Товар</th>
+                                <th className="text-center p-3 text-sm font-medium">Цена</th>
+                                <th className="text-center p-3 text-sm font-medium">Кол-во</th>
+                                <th className="text-right p-3 text-sm font-medium">Сумма</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {order.items.map((item, idx) => (
+                                <tr key={idx} className="border-t">
+                                  <td className="p-3">{item.productName}</td>
+                                  <td className="p-3 text-center">
+                                    {item.productPrice.toLocaleString('ru-RU')} ₽
+                                  </td>
+                                  <td className="p-3 text-center">{item.quantity} шт.</td>
+                                  <td className="p-3 text-right font-medium">
+                                    {item.totalPrice.toLocaleString('ru-RU')} ₽
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Icon name="Phone" size={16} className="text-muted-foreground" />
-                          <span>{order.customerPhone}</span>
-                        </div>
-                        {order.customerEmail && (
-                          <div className="flex items-center gap-2">
-                            <Icon name="Mail" size={16} className="text-muted-foreground" />
-                            <span>{order.customerEmail}</span>
-                          </div>
-                        )}
                       </div>
 
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Icon name="Truck" size={16} className="text-muted-foreground" />
-                          <span>{order.deliveryType}</span>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Icon name="User" size={16} className="text-muted-foreground" />
+                            <span className="font-medium">{order.customerName}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Icon name="Phone" size={16} className="text-muted-foreground" />
+                            <span>{order.customerPhone}</span>
+                          </div>
+                          {order.customerEmail && (
+                            <div className="flex items-center gap-2">
+                              <Icon name="Mail" size={16} className="text-muted-foreground" />
+                              <span>{order.customerEmail}</span>
+                            </div>
+                          )}
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Icon name="MapPin" size={16} className="text-muted-foreground" />
-                          <span className="text-sm">{order.deliveryAddress}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Icon name="CreditCard" size={16} className="text-muted-foreground" />
-                          <span>{order.paymentType}</span>
+
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Icon name="Truck" size={16} className="text-muted-foreground" />
+                            <span>{order.deliveryType}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Icon name="MapPin" size={16} className="text-muted-foreground" />
+                            <span className="text-sm">{order.deliveryAddress}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Icon name="CreditCard" size={16} className="text-muted-foreground" />
+                            <span>{order.paymentType}</span>
+                          </div>
                         </div>
                       </div>
                     </div>

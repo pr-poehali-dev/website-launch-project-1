@@ -85,8 +85,26 @@ def get_orders(limit: int = 50) -> List[Dict[str, Any]]:
     
     orders = []
     for row in cur.fetchall():
+        order_id = row[0]
+        
+        cur.execute('''
+            SELECT product_id, product_name, product_price, quantity, total_price
+            FROM order_items
+            WHERE order_id = %s
+        ''', (order_id,))
+        
+        items = []
+        for item_row in cur.fetchall():
+            items.append({
+                'productId': item_row[0],
+                'productName': item_row[1],
+                'productPrice': float(item_row[2]),
+                'quantity': item_row[3],
+                'totalPrice': float(item_row[4])
+            })
+        
         orders.append({
-            'id': row[0],
+            'id': order_id,
             'orderNumber': row[1],
             'customerName': row[2],
             'customerPhone': row[3],
@@ -99,7 +117,8 @@ def get_orders(limit: int = 50) -> List[Dict[str, Any]]:
             'totalAmount': float(row[10]),
             'comment': row[11],
             'createdAt': row[12].isoformat(),
-            'updatedAt': row[13].isoformat()
+            'updatedAt': row[13].isoformat(),
+            'items': items
         })
     
     cur.close()
