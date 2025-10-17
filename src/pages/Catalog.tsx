@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,9 @@ import Icon from '@/components/ui/icon';
 import { products } from '@/data/products';
 
 export default function Catalog() {
+  const [searchParams] = useSearchParams();
+  const searchQuery = searchParams.get('search') || '';
+  
   const [selectedCategory, setSelectedCategory] = useState<string>('Все');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000]);
   const [sortBy, setSortBy] = useState<string>('popular');
@@ -16,6 +19,17 @@ export default function Catalog() {
   const categories = ['Все', 'Электроника', 'Одежда', 'Дом и сад', 'Спорт', 'Красота', 'Детские товары'];
 
   const filteredProducts = products
+    .filter(p => {
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        return (
+          p.name.toLowerCase().includes(query) ||
+          p.description.toLowerCase().includes(query) ||
+          p.category.toLowerCase().includes(query)
+        );
+      }
+      return true;
+    })
     .filter(p => selectedCategory === 'Все' || p.category === selectedCategory)
     .filter(p => p.price >= priceRange[0] && p.price <= priceRange[1])
     .sort((a, b) => {
@@ -32,7 +46,9 @@ export default function Catalog() {
       <main className="flex-1 py-8">
         <div className="container">
           <div className="mb-8">
-            <h1 className="text-4xl font-bold mb-2">Каталог товаров</h1>
+            <h1 className="text-4xl font-bold mb-2">
+              {searchQuery ? `Результаты поиска: "${searchQuery}"` : 'Каталог товаров'}
+            </h1>
             <p className="text-muted-foreground">Найдено товаров: {filteredProducts.length}</p>
           </div>
 
